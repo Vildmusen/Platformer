@@ -9,11 +9,12 @@ import com.viktorvilmusenaho.platformer.Game;
 
 public abstract class Entity {
     static final String TAG = "Entity";
+    static final float DEFAULT_DIMENSION = 1.0f;
     public static Game _game = null; //shared ref, managed by the Game-class!
     public float _x = 0;
     public float _y = 0;
-    public float _width = 0;
-    public float _height = 0;
+    public float _width = DEFAULT_DIMENSION;
+    public float _height = DEFAULT_DIMENSION;
 
 
     public void update(final double dt) {

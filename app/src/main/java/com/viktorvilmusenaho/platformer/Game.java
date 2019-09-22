@@ -17,6 +17,7 @@ import com.viktorvilmusenaho.platformer.entities.Entity;
 import com.viktorvilmusenaho.platformer.input.InputManager;
 import com.viktorvilmusenaho.platformer.levels.LevelManager;
 import com.viktorvilmusenaho.platformer.levels.TestLevel;
+import com.viktorvilmusenaho.platformer.utils.BitmapPool;
 
 import java.util.ArrayList;
 
@@ -25,7 +26,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     public static final String TAG = "Game";
     static int STAGE_WIDTH = 1280;
     static int STAGE_HEIGHT = 720;
-    private static final float METERS_TO_SHOW_X = 16f;
+    private static final float METERS_TO_SHOW_X = 32f;
     private static final float METERS_TO_SHOW_Y = 0f;
     private static final int BG_COLOR = Color.rgb(135, 200, 240);
 
@@ -41,6 +42,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     private InputManager _controls = new InputManager();
     private Viewport _camera = null;
     public final ArrayList<Entity> _visibleEntities = new ArrayList<>();
+    public BitmapPool _pool = null;
 
     public Game(final Context context) {
         super(context);
@@ -53,14 +55,12 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         final float ratio = (TARGET_HEIGHT >= actualHeight ? 1 : (float) TARGET_HEIGHT / actualHeight);
         STAGE_WIDTH = (int) (ratio * getScreenWidth());
         STAGE_HEIGHT = TARGET_HEIGHT;
-
         _camera = new Viewport(STAGE_WIDTH, STAGE_HEIGHT, METERS_TO_SHOW_X, METERS_TO_SHOW_Y);
-
         Entity._game = this;
+        _pool = new BitmapPool(this);
         _holder = getHolder();
         _holder.addCallback(this);
         _holder.setFixedSize(STAGE_WIDTH, STAGE_HEIGHT);
-
         _level = new LevelManager(new TestLevel());
         Log.d(TAG, "Game created!");
     }
@@ -212,6 +212,9 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         }
         _controls = null;
         Entity._game = null;
+        if(_pool != null){
+            _pool.empty();
+        }
         _holder.removeCallback(this);
     }
 
