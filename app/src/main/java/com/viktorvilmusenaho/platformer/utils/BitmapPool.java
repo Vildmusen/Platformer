@@ -97,7 +97,9 @@ public class BitmapPool {
     public void empty() {
         for (final Object entry : _bitmaps.entrySet()) {
             HashMap.Entry<String, Bitmap> temp = (HashMap.Entry<String, Bitmap>) entry;
-            temp.getValue().recycle();
+            if(temp.getValue() != _nullsprite){
+                temp.getValue().recycle();
+            }
         }
         _bitmaps.clear();
     }

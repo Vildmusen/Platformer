@@ -3,6 +3,7 @@ package com.viktorvilmusenaho.platformer.levels;
 import com.viktorvilmusenaho.platformer.entities.Entity;
 import com.viktorvilmusenaho.platformer.entities.Player;
 import com.viktorvilmusenaho.platformer.entities.StaticEntity;
+import com.viktorvilmusenaho.platformer.utils.BitmapPool;
 
 import java.util.ArrayList;
 
@@ -15,8 +16,10 @@ public class LevelManager {
     private final ArrayList<Entity> _entitiesToAdd = new ArrayList<>();
     private final ArrayList<Entity> _entitiesToRemove = new ArrayList<>();
     public Player _player = null;
+    private BitmapPool _pool = null;
 
-    public LevelManager(final LevelData map) {
+    public LevelManager(final LevelData map, BitmapPool pool) {
+        _pool = pool;
         loadMapAssets(map);
     }
 
@@ -56,20 +59,32 @@ public class LevelManager {
                     continue;
                 }
                 final String spriteName = map.getSpriteName(tileID);
-                createEntity(spriteName, x, y);
+                if (!spriteName.equalsIgnoreCase(LevelData.PLAYER_FRONT)) {
+                    createEntity(spriteName, x, y);
+                } else {
+                    ArrayList<String> states = getPlayerStates();
+                    createPlayerEntity(states, x, y);
+                }
             }
         }
     }
 
+    private ArrayList<String> getPlayerStates(){
+        ArrayList<String> states = new ArrayList<>();
+        states.add(LevelData.PLAYER_FRONT);
+        states.add(LevelData.PLAYER_SIDE);
+        return states;
+    }
+
     private void createEntity(final String spriteName, final int xPos, final int yPos) {
-        Entity e = null;
-        if (spriteName.equalsIgnoreCase(LevelData.PLAYER)) {
-            e = new Player(spriteName, xPos, yPos);
-            if(_player != null) {
-                _player = (Player) e;
-            }
-        } else {
-            e = new StaticEntity(spriteName, xPos, yPos);
+        Entity e = new StaticEntity(spriteName, xPos, yPos);
+        addEntity(e);
+    }
+
+    private void createPlayerEntity(final ArrayList<String> states, final int xPos, final int yPos) {
+        Player e = new Player(states, xPos, yPos);
+        if (_player == null) {
+            _player = e;
         }
         addEntity(e);
     }
@@ -104,6 +119,7 @@ public class LevelManager {
         }
         _entities.clear();
         _player = null;
+        _pool.empty();
     }
 
     public void destroy() {

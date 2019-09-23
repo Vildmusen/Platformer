@@ -26,7 +26,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     public static final String TAG = "Game";
     static int STAGE_WIDTH = 1280;
     static int STAGE_HEIGHT = 720;
-    private static final float METERS_TO_SHOW_X = 32f;
+    private static final float METERS_TO_SHOW_X = 16f;
     private static final float METERS_TO_SHOW_Y = 0f;
     private static final int BG_COLOR = Color.rgb(135, 200, 240);
 
@@ -57,11 +57,13 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         STAGE_HEIGHT = TARGET_HEIGHT;
         _camera = new Viewport(STAGE_WIDTH, STAGE_HEIGHT, METERS_TO_SHOW_X, METERS_TO_SHOW_Y);
         Entity._game = this;
+
         _pool = new BitmapPool(this);
+        _level = new LevelManager(new TestLevel(), _pool);
+
         _holder = getHolder();
         _holder.addCallback(this);
         _holder.setFixedSize(STAGE_WIDTH, STAGE_HEIGHT);
-        _level = new LevelManager(new TestLevel());
         Log.d(TAG, "Game created!");
     }
 
@@ -133,7 +135,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
             lastFrame = System.nanoTime();
             update(deltaTime);
             buildVisibleSet();
-            render(_visibleEntities);
+            render(_camera, _visibleEntities);
         }
     }
 
@@ -147,14 +149,14 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     }
 
     private void update(final double dt) {
-        _camera.lookAt(_level._levelWidth / 2, _level._levelHeight / 2);
+        _camera.lookAt(_level._player); // TODO ease it bruh
         _level.update(dt);
     }
 
     // TODO provide a viewport
     private static final Point _position = new Point();
 
-    private void render(final ArrayList<Entity> visibleEntities) {
+    private void render(final Viewport camera, final ArrayList<Entity> visibleEntities) {
         if (!acquireAndLockCanvas()) {
             return;
         }
@@ -162,7 +164,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
             _canvas.drawColor(BG_COLOR);
             for (final Entity e : visibleEntities) {
                 _transform.reset();
-                _camera.worldToScreen(e, _position);
+                camera.worldToScreen(e, _position);
                 _transform.postTranslate(_position.x, _position.y);
                 e.render(_canvas, _transform, _paint);
             }
@@ -213,7 +215,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         _controls = null;
         Entity._game = null;
         if(_pool != null){
-            _pool.empty();
+            _pool.empty(); // safe but redundant, the LevelManager empties the pool as well.
         }
         _holder.removeCallback(this);
     }
