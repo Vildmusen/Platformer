@@ -7,8 +7,6 @@ import android.view.View;
 
 import com.viktorvilmusenaho.platformer.input.InputManager;
 
-import java.util.ArrayList;
-
 public class Player extends DynamicEntity {
 
     static final String TAG = "Player";
@@ -18,30 +16,21 @@ public class Player extends DynamicEntity {
     private final int LEFT = 1;
     private final int RIGHT = -1;
     private final int FRONT = 0;
-    private int _facing = LEFT;
-    private ArrayList<String> _playerStates = new ArrayList<>();
+    private int _facing = RIGHT;
 
-    public Player(final ArrayList<String> states, final int xPos, final int yPos) {
-        super(states.get(0), xPos, yPos);
+    public Player(final String spriteName, final int xPos, final int yPos) {
+        super(spriteName, xPos, yPos);
         _width = DEFAULT_DIMENSION;
         _height = DEFAULT_DIMENSION;
-        for (String s : states) {
-            loadBitmap(s, xPos, yPos);
-        }
-        _bitmap = _game._pool.getBitmap(states.get(0));
+        loadBitmap(spriteName, xPos, yPos);
     }
 
     @Override
     public void render(Canvas canvas, Matrix transform, Paint paint) {
-        if (_facing != FRONT) {
-            _bitmap = _game._pool.getBitmap(_playerStates.get(1));
-            transform.preScale(_facing, 1.0f);
-            if (_facing == RIGHT) {
-                final float offset = _game.worldToScreenX(_width);
-                transform.postTranslate(offset, 0);
-            }
-        } else {
-            _bitmap = _game._pool.getBitmap(_playerStates.get(0));
+        transform.preScale(_facing, 1.0f);
+        if (_facing == RIGHT) {
+            final float offset = _game.worldToScreenX(_width);
+            transform.postTranslate(offset, 0);
         }
         super.render(canvas, transform, paint);
     }
@@ -51,11 +40,7 @@ public class Player extends DynamicEntity {
         final InputManager controls = _game.getControls();
         final float direction = controls._horizontalFactor;
         _velX = direction * PLAYER_RUN_SPEED;
-        if(_velX > 0) {
-            updateFacingDirection(direction);
-        } else {
-
-        }
+        updateFacingDirection(direction);
         if (controls._isJumping && _isOnGround) {
             _velY = PLAYER_JUMP_FORCE;
             _isOnGround = false;

@@ -59,7 +59,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         Entity._game = this;
 
         _pool = new BitmapPool(this);
-        _level = new LevelManager(new TestLevel(), _pool);
+        _level = new LevelManager(new TestLevel(getContext()), _pool);
 
         _holder = getHolder();
         _holder.addCallback(this);

@@ -59,32 +59,18 @@ public class LevelManager {
                     continue;
                 }
                 final String spriteName = map.getSpriteName(tileID);
-                if (!spriteName.equalsIgnoreCase(LevelData.PLAYER_FRONT)) {
-                    createEntity(spriteName, x, y);
-                } else {
-                    ArrayList<String> states = getPlayerStates();
-                    createPlayerEntity(states, x, y);
-                }
+                createEntity(spriteName, x, y);
             }
         }
     }
 
-    private ArrayList<String> getPlayerStates(){
-        ArrayList<String> states = new ArrayList<>();
-        states.add(LevelData.PLAYER_FRONT);
-        states.add(LevelData.PLAYER_SIDE);
-        return states;
-    }
-
     private void createEntity(final String spriteName, final int xPos, final int yPos) {
-        Entity e = new StaticEntity(spriteName, xPos, yPos);
-        addEntity(e);
-    }
-
-    private void createPlayerEntity(final ArrayList<String> states, final int xPos, final int yPos) {
-        Player e = new Player(states, xPos, yPos);
-        if (_player == null) {
-            _player = e;
+        Entity e = null;
+        if (spriteName.equalsIgnoreCase(LevelData.PLAYER_SIDE)) {
+            e = new Player(spriteName, xPos, yPos);
+            _player = (Player) e;
+        } else {
+            e = new StaticEntity(spriteName, xPos, yPos);
         }
         addEntity(e);
     }
