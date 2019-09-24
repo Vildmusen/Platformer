@@ -26,7 +26,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     public static final String TAG = "Game";
     static int STAGE_WIDTH = 1280;
     static int STAGE_HEIGHT = 720;
-    private static final float METERS_TO_SHOW_X = 16f;
+    private static final float METERS_TO_SHOW_X = 24f;
     private static final float METERS_TO_SHOW_Y = 0f;
     private static final int BG_COLOR = Color.rgb(135, 200, 240);
 

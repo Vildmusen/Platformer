@@ -1,7 +1,10 @@
 package com.viktorvilmusenaho.platformer.levels;
 
+import com.viktorvilmusenaho.platformer.entities.Coin;
 import com.viktorvilmusenaho.platformer.entities.Entity;
+import com.viktorvilmusenaho.platformer.entities.Lava;
 import com.viktorvilmusenaho.platformer.entities.Player;
+import com.viktorvilmusenaho.platformer.entities.Spike;
 import com.viktorvilmusenaho.platformer.entities.StaticEntity;
 import com.viktorvilmusenaho.platformer.utils.BitmapPool;
 
@@ -69,6 +72,12 @@ public class LevelManager {
         if (spriteName.equalsIgnoreCase(LevelData.PLAYER_SIDE)) {
             e = new Player(spriteName, xPos, yPos);
             _player = (Player) e;
+        } else if (spriteName.equalsIgnoreCase("lava")){
+            e = new Lava(spriteName, xPos, yPos);
+        } else if (spriteName.equalsIgnoreCase("spearsup_brown")){
+            e = new Spike(spriteName, xPos, yPos);
+        } else if (spriteName.equalsIgnoreCase("exclamationmarkblock_brown")) {
+            e = new Coin(spriteName, xPos, yPos);
         } else {
             e = new StaticEntity(spriteName, xPos, yPos);
         }
