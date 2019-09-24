@@ -1,5 +1,8 @@
 package com.viktorvilmusenaho.platformer.levels;
 
+import android.graphics.Canvas;
+
+import com.viktorvilmusenaho.platformer.HUD;
 import com.viktorvilmusenaho.platformer.entities.Coin;
 import com.viktorvilmusenaho.platformer.entities.Entity;
 import com.viktorvilmusenaho.platformer.entities.Lava;
@@ -20,6 +23,7 @@ public class LevelManager {
     private final ArrayList<Entity> _entitiesToRemove = new ArrayList<>();
     public Player _player = null;
     private BitmapPool _pool = null;
+
 
     public LevelManager(final LevelData map, BitmapPool pool) {
         _pool = pool;

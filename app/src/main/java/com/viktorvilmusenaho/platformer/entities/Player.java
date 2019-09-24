@@ -15,9 +15,12 @@ public class Player extends DynamicEntity {
     static final float PLAYER_JUMP_FORCE = -(GRAVITY / 2);
     static final float MIN_INPUT_TO_TURN = 0.05f; // 5% joystick input wont turn the character
     static final int DAMAGE_DURATION = 50;
+    static final int PLAYER_HEALTH = 6;
     private final int LEFT = 1;
     private final int RIGHT = -1;
     private final int FRONT = 0;
+
+    public int _health = 0;
     private int _facing = RIGHT;
     private int _damageCounter = 0;
     private boolean _isTakingDamage = false;
@@ -26,6 +29,7 @@ public class Player extends DynamicEntity {
         super(spriteName, xPos, yPos);
         _width = DEFAULT_DIMENSION;
         _height = DEFAULT_DIMENSION;
+        _health = PLAYER_HEALTH;
         loadBitmap(spriteName, xPos, yPos);
     }
 
@@ -76,11 +80,13 @@ public class Player extends DynamicEntity {
             intensity = 1.2f;
             _velY = PLAYER_JUMP_FORCE * intensity;
             reactToEntity(intensity);
+            _health--;
         }
         if (that instanceof Spike) {
-            intensity = 0.6f;
+            intensity = 0.8f;
             _velY = PLAYER_JUMP_FORCE * intensity;
             reactToEntity(intensity);
+            _health--;
         }
     }
 

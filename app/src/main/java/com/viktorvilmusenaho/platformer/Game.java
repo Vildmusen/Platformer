@@ -38,8 +38,9 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     private Canvas _canvas = null;
     private final Matrix _transform = new Matrix();
 
-    private LevelManager _level = null;
+    public LevelManager _level = null;
     private InputManager _controls = new InputManager();
+    private HUD _hud = null;
     private Viewport _camera = null;
     public final ArrayList<Entity> _visibleEntities = new ArrayList<>();
     public BitmapPool _pool = null;
@@ -60,6 +61,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
 
         _pool = new BitmapPool(this);
         _level = new LevelManager(new TestLevel(getContext()), _pool);
+        _hud = new HUD(this);
 
         _holder = getHolder();
         _holder.addCallback(this);
@@ -168,6 +170,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
                 _transform.postTranslate(_position.x, _position.y);
                 e.render(_canvas, _transform, _paint);
             }
+            _hud.renderHUD(_canvas, _transform, _paint);
         } finally {
             _holder.unlockCanvasAndPost(_canvas);
         }
