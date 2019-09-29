@@ -54,7 +54,9 @@ public class HUD {
         paint.setColor(Color.WHITE);
         int textSize = _coin.getHeight();
         paint.setTextSize(textSize);
-        canvas.drawText(String.format("%d", _player._coinCount), Game.STAGE_WIDTH - ((HUD_EDGE_MARGIN) + _coin.getWidth() * 2), HUD_EDGE_MARGIN + textSize, paint);
+        Paint.FontMetrics metrics = paint.getFontMetrics();
+        paint.setTextAlign(Paint.Align.RIGHT);
+        canvas.drawText(String.format("%d", _player._coinCount), Game.STAGE_WIDTH - ((HUD_EDGE_MARGIN) + _coin.getWidth() * 1.5f), HUD_EDGE_MARGIN - metrics.ascent, paint);
 
     }
 

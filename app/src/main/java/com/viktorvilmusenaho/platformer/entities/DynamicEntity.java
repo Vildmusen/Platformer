@@ -19,7 +19,7 @@ public class DynamicEntity extends StaticEntity {
     public void update(double dt) {
         _x += Utils.clamp((float) (_velX * dt), -MAX_DELTA, MAX_DELTA);
 
-        if(!_isOnGround) {
+        if (!_isOnGround) {
             final float gravityThisTick = (float) (_gravity * dt);
             _velY += gravityThisTick;
         }
@@ -40,7 +40,9 @@ public class DynamicEntity extends StaticEntity {
             _velY = 0;
             if (Entity.overlap.y < 0f) { // we've hit out feet
                 _isOnGround = true;
-            } // if overlap.y > 0f, we've hit our head
+            } else if (Entity.overlap.y > 0f) {
+                // TODO hit head
+            }
         }
     }
 }
