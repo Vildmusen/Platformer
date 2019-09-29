@@ -35,4 +35,15 @@
         android:layout_alignTop="@+id/keypad_left"
         android:layout_width="@dimen/keypad_size"
         android:layout_height="@dimen/keypad_size" />
+
+    <Button
+        android:id="@+id/keypad_jump2"
+        android:layout_width="@dimen/keypad_size"
+        android:layout_height="@dimen/keypad_size"
+        android:layout_alignTop="@+id/keypad_left"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="48dp"
+        android:layout_marginEnd="48dp"
+        android:layout_marginRight="120dp" />
 </RelativeLayout>
