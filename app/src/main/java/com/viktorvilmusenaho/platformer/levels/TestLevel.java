@@ -1,6 +1,7 @@
 package com.viktorvilmusenaho.platformer.levels;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.SparseArray;
 
 import java.io.BufferedReader;
@@ -23,7 +24,7 @@ public class TestLevel extends LevelData {
         _tileIdToSpriteName.put(5, "ground_background_full");
         _tileIdToSpriteName.put(6, "lava");
         _tileIdToSpriteName.put(7, "spearsup_brown");
-        _tileIdToSpriteName.put(8, "exclamationmarkblock_brown");
+        _tileIdToSpriteName.put(8, "coin");
 
         _tiles = readFromFile(context, "testlevel2");
 
@@ -67,7 +68,12 @@ public class TestLevel extends LevelData {
             row = lines.get(y);
             for (int x = 0; x < row.length; x++) {
                 tile = row[x];
-                spriteData[y][x] = Character.getNumericValue(tile);
+                try{
+                    spriteData[y][x] = Character.getNumericValue(tile);
+                } catch (Exception e) {
+                    Log.d(TAG, "Could read sprite value: " + tile);
+                    spriteData[y][x] = -1;
+                }
             }
         }
 

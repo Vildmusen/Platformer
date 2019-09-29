@@ -1,8 +1,5 @@
 package com.viktorvilmusenaho.platformer.levels;
 
-import android.graphics.Canvas;
-
-import com.viktorvilmusenaho.platformer.HUD;
 import com.viktorvilmusenaho.platformer.entities.Coin;
 import com.viktorvilmusenaho.platformer.entities.Entity;
 import com.viktorvilmusenaho.platformer.entities.Lava;
@@ -80,7 +77,7 @@ public class LevelManager {
             e = new Lava(spriteName, xPos, yPos);
         } else if (spriteName.equalsIgnoreCase("spearsup_brown")){
             e = new Spike(spriteName, xPos, yPos);
-        } else if (spriteName.equalsIgnoreCase("exclamationmarkblock_brown")) {
+        } else if (spriteName.equalsIgnoreCase("coin")) {
             e = new Coin(spriteName, xPos, yPos);
         } else {
             e = new StaticEntity(spriteName, xPos, yPos);

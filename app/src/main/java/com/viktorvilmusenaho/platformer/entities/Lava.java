@@ -1,9 +1,10 @@
 package com.viktorvilmusenaho.platformer.entities;
 
-public class Lava extends StaticEntity {
+public class Lava extends EnemyStaticEntity {
 
     public Lava(final String spriteName, final int xPos, final int yPos) {
         super(spriteName, xPos, yPos);
+        _intensity = 1.2f;
     }
 
     @Override

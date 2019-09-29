@@ -3,10 +3,8 @@ package com.viktorvilmusenaho.platformer.entities;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.view.View;
 
 import com.viktorvilmusenaho.platformer.input.InputManager;
-import com.viktorvilmusenaho.platformer.utils.Utils;
 
 public class Player extends DynamicEntity {
 
@@ -24,6 +22,7 @@ public class Player extends DynamicEntity {
     private int _facing = RIGHT;
     private int _damageCounter = 0;
     private boolean _isTakingDamage = false;
+    public int _coinCount = 0;
 
     public Player(final String spriteName, final int xPos, final int yPos) {
         super(spriteName, xPos, yPos);
@@ -74,19 +73,15 @@ public class Player extends DynamicEntity {
 
     @Override
     public void onCollision(Entity that) {
-        super.onCollision(that);
-        float intensity = 0f;
-        if (that instanceof Lava) {
-            intensity = 1.2f;
-            _velY = PLAYER_JUMP_FORCE * intensity;
-            reactToEntity(intensity);
-            _health--;
-        }
-        if (that instanceof Spike) {
-            intensity = 0.8f;
-            _velY = PLAYER_JUMP_FORCE * intensity;
-            reactToEntity(intensity);
-            _health--;
+        if (!(that instanceof Coin)) {
+            super.onCollision(that);
+            if (that instanceof EnemyStaticEntity) {
+                final float intensity = ((EnemyStaticEntity) that)._intensity;
+                _velY = PLAYER_JUMP_FORCE * intensity;
+                reactToEntity(intensity);
+            }
+        } else {
+            _coinCount++;
         }
     }
 
@@ -96,9 +91,9 @@ public class Player extends DynamicEntity {
         } else {
             _facing = LEFT;
         }
-        _velX = -_velX;
-        _velX = _velX * intensity;
+        _velX = -(_velX * intensity);
         _isTakingDamage = true;
         _damageCounter = (int) (DAMAGE_DURATION * intensity);
+        _health--;
     }
 }
