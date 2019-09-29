@@ -11,8 +11,8 @@
         android:layout_width="@dimen/keypad_size"
         android:layout_height="@dimen/keypad_size"
         android:layout_below="@+id/keypad_left"
-        android:layout_marginLeft="23dp"
-        android:layout_marginTop="-49dp"
+        android:layout_marginLeft="52dp"
+        android:layout_marginTop="-48dp"
         android:layout_toRightOf="@+id/keypad_left"
         android:background="@drawable/arrow"
         android:rotation="90" />
@@ -31,7 +31,7 @@
         android:layout_height="@dimen/keypad_size"
         android:layout_alignTop="@+id/keypad_left"
         android:layout_alignParentRight="true"
-        android:background="@drawable/circle" />
+        android:background="@drawable/circle_a" />
 
     <Button
         android:id="@+id/keypad_dash"
@@ -43,5 +43,5 @@
         android:layout_marginTop="0dp"
         android:layout_marginEnd="65dp"
         android:layout_marginRight="65dp"
-        android:background="@drawable/circle" />
+        android:background="@drawable/circle_b" />
 </RelativeLayout>

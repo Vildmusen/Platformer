@@ -3,8 +3,10 @@ package com.viktorvilmusenaho.platformer.levels;
 public abstract class LevelData {
 
     public static final String NULLSPRITE = "nullsprite";
-    public static final String PLAYER_FRONT = "red_front1";
-    public static final String PLAYER_SIDE = "red_left1";
+    public static final String PLAYER__SIDE_1 = "player_1";
+    public static final String PLAYER__SIDE_2 = "player_2";
+    public static final String PLAYER__SIDE_3 = "player_3";
+    public static final String PLAYER_FRONT = "player_0";
 
     public static final int NO_TILE = 0;
     int[][] _tiles;

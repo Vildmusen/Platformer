@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -17,6 +18,7 @@ import com.viktorvilmusenaho.platformer.entities.Entity;
 import com.viktorvilmusenaho.platformer.input.InputManager;
 import com.viktorvilmusenaho.platformer.levels.LevelManager;
 import com.viktorvilmusenaho.platformer.levels.TestLevel;
+import com.viktorvilmusenaho.platformer.sound.JukeBox;
 import com.viktorvilmusenaho.platformer.utils.BitmapPool;
 
 import java.util.ArrayList;
@@ -38,6 +40,8 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     private Canvas _canvas = null;
     private final Matrix _transform = new Matrix();
 
+    public JukeBox _jukebox = null;
+
     public LevelManager _level = null;
     private InputManager _controls = new InputManager();
     private HUD _hud = null;
@@ -47,41 +51,46 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
 
     public Game(final Context context) {
         super(context);
-        init();
+        init(context);
     }
 
-    private void init() {
+    private void init(final Context context) {
         final int TARGET_HEIGHT = 360;
         final int actualHeight = getScreenHeight();
         final float ratio = (TARGET_HEIGHT >= actualHeight ? 1 : (float) TARGET_HEIGHT / actualHeight);
         STAGE_WIDTH = (int) (ratio * getScreenWidth());
         STAGE_HEIGHT = TARGET_HEIGHT;
-        _camera = new Viewport(STAGE_WIDTH, STAGE_HEIGHT, METERS_TO_SHOW_X, METERS_TO_SHOW_Y);
         Entity._game = this;
+        _camera = new Viewport(STAGE_WIDTH, STAGE_HEIGHT, METERS_TO_SHOW_X, METERS_TO_SHOW_Y);
 
+        _jukebox = new JukeBox(context);
         _pool = new BitmapPool(this);
         _level = new LevelManager(new TestLevel(getContext()), _pool);
         _hud = new HUD(this);
 
+        final RectF worldEdges = new RectF(0f, 0f, _level._levelWidth, _level._levelHeight);
+        _camera.setBounds(worldEdges);
+
         _holder = getHolder();
         _holder.addCallback(this);
         _holder.setFixedSize(STAGE_WIDTH, STAGE_HEIGHT);
+        _jukebox.play(JukeBox.BACKGROUND, -1);
         Log.d(TAG, "Game created!");
     }
 
     public Game(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(context);
     }
 
     public Game(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        init(context);
     }
 
     public Game(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        init();
+        init(context);
     }
 
     public InputManager getControls(){
@@ -190,6 +199,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         Log.d(TAG, "onResume");
         _isRunning = true;
         _controls.onResume();
+        _jukebox.onResume();
         _gameThread = new Thread(this);
     }
 
@@ -197,6 +207,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         Log.d(TAG, "onPause");
         _isRunning = false;
         _controls.onPause();
+        _jukebox.onPause();
         while (true) {
             try {
                 _gameThread.join();
@@ -216,6 +227,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
             _level = null;
         }
         _controls = null;
+        _jukebox.destroy();
         Entity._game = null;
         if(_pool != null){
             _pool.empty(); // safe but redundant, the LevelManager empties the pool as well.

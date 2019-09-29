@@ -10,15 +10,15 @@ import java.io.IOException;
 
 public class JukeBox {
     private static final int MAX_STREAMS = 3;
-    static int BACKGROUND = 0;
-    static int JUMP = 0;
-    static int DASH = 0;
-    static int COIN_PICKUP = 0;
-    static int DAMAGE = 0;
+    public static int BACKGROUND = 0;
+    public static int JUMP = 0;
+    public static int DASH = 0;
+    public static int COIN_PICKUP = 0;
+    public static int DAMAGE = 0;
 
     private SoundPool _soundPool;
 
-    JukeBox(final Context context) {
+    public JukeBox(final Context context) {
         AudioAttributes attr = new AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_GAME)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -34,26 +34,25 @@ public class JukeBox {
         try {
             AssetManager assetManager = context.getAssets();
             AssetFileDescriptor descriptor;
-            descriptor = assetManager.openFd("crash.wav");
+            descriptor = assetManager.openFd("background.wav");
             BACKGROUND = _soundPool.load(descriptor, 1);
-            descriptor = assetManager.openFd("game_over.wav");
+            descriptor = assetManager.openFd("jump.wav");
             JUMP = _soundPool.load(descriptor, 2);
-            descriptor = assetManager.openFd("game_start.ogg");
+            descriptor = assetManager.openFd("dash.wav");
             DASH = _soundPool.load(descriptor, 2);
-            descriptor = assetManager.openFd("laser_pew.wav");
+            descriptor = assetManager.openFd("coin_pickup.wav");
             COIN_PICKUP = _soundPool.load(descriptor, 2);
-            descriptor = assetManager.openFd("game_start.ogg");
+            descriptor = assetManager.openFd("player_damage.wav");
             DAMAGE = _soundPool.load(descriptor, 2);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    void play(final int soundID) {
+    public void play(final int soundID, final int loop) {
         final float leftVolume = 1f;
         final float rightVolume = 1f;
         final int priority = 1;
-        final int loop = 0;
         final float rate = 1.0f;
 
         if (soundID > 0) {
@@ -61,7 +60,15 @@ public class JukeBox {
         }
     }
 
-    void destroy() {
+    public void onPause(){
+        _soundPool.autoPause();
+    }
+
+    public void onResume(){
+        _soundPool.autoResume();
+    }
+
+    public void destroy() {
         _soundPool.release();
         _soundPool = null;
     }

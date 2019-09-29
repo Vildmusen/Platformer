@@ -7,7 +7,7 @@ import android.graphics.RectF;
 import com.viktorvilmusenaho.platformer.entities.Entity;
 
 public class Viewport {
-    private final PointF _lookAt = new PointF(0f,0f);
+    private final PointF _lookAt = new PointF(0f, 0f);
     private int _pixelsPerMeterX;
     private int _pixelsPerMeterY;
     private int _screenWidth;
@@ -19,8 +19,9 @@ public class Viewport {
     private float _halfDistX;
     private float _halfDistY;
     private final static float BUFFER = 2f;
-    
-    public Viewport(final int screenWidth, final int screenHeight, final float metersToShowX, final float metersToShowY){
+    private RectF _bounds = null;
+
+    public Viewport(final int screenWidth, final int screenHeight, final float metersToShowX, final float metersToShowY) {
         _screenWidth = screenWidth;
         _screenHeight = screenHeight;
         _screenCenterX = _screenWidth / 2;
@@ -31,69 +32,98 @@ public class Viewport {
     }
 
     private void setMetersToShow(float metersToShowX, float metersToShowY) {
-        if (metersToShowX <= 0f && metersToShowY <= 0f) throw new IllegalArgumentException("One of the dimensions must be provided!");
+        if (metersToShowX <= 0f && metersToShowY <= 0f)
+            throw new IllegalArgumentException("One of the dimensions must be provided!");
         //formula: new height = (original height / original width) x new width
         _metersToShowX = metersToShowX;
         _metersToShowY = metersToShowY;
-        if(metersToShowX == 0f || metersToShowY == 0f){
-            if(metersToShowY > 0f) { //if Y is configured, calculate X
+        if (metersToShowX == 0f || metersToShowY == 0f) {
+            if (metersToShowY > 0f) { //if Y is configured, calculate X
                 _metersToShowX = ((float) _screenWidth / _screenHeight) * metersToShowY;
-            }else { //if X is configured, calculate Y
+            } else { //if X is configured, calculate Y
                 _metersToShowY = ((float) _screenHeight / _screenWidth) * metersToShowX;
             }
         }
-        _halfDistX = (_metersToShowX+BUFFER) * 0.5f;
-        _halfDistY = (_metersToShowY+BUFFER) * 0.5f;
-        _pixelsPerMeterX = (int)(_screenWidth / _metersToShowX);
-        _pixelsPerMeterY = (int)(_screenHeight / _metersToShowY);
+        _halfDistX = (_metersToShowX + BUFFER) * 0.5f;
+        _halfDistY = (_metersToShowY + BUFFER) * 0.5f;
+        _pixelsPerMeterX = (int) (_screenWidth / _metersToShowX);
+        _pixelsPerMeterY = (int) (_screenHeight / _metersToShowY);
     }
 
-    public float getHorizontalView(){
+    public void setBounds(final RectF bounds) {
+        _bounds = bounds;
+    }
+
+    public float getHorizontalView() {
         return _metersToShowX;
     }
-    public float getVerticalView(){
+
+    public float getVerticalView() {
         return _metersToShowY;
     }
+
     public int getScreenWidth() {
         return _screenWidth;
     }
-    public int getScreenHeight(){
+
+    public int getScreenHeight() {
         return _screenHeight;
     }
-    public int getPixelsPerMeterX(){
+
+    public int getPixelsPerMeterX() {
         return _pixelsPerMeterX;
     }
-    public int getPixelsPerMeterY(){
+
+    public int getPixelsPerMeterY() {
         return _pixelsPerMeterY;
     }
 
-    public void lookAt(final float x, final float y){
-        _lookAt.x = x;
-        _lookAt.y = y;
+    public void lookAt(final float x, final float y) {
+        if (isInBoundsX(x)) {
+            _lookAt.x = x;
+        }
+        if (isInBoundsY(y)) {
+            _lookAt.y = y;
+        }
     }
-    public void lookAt(final Entity obj){
+
+    public void lookAt(final Entity obj) {
         lookAt(obj.centerX(), obj.centerY());
     }
-    public void lookAt(final PointF pos){
+
+    public void lookAt(final PointF pos) {
         lookAt(pos.x, pos.y);
     }
 
-    public void worldToScreen(final float worldPosX, final float worldPosY, Point screenPos){
+    private boolean isInBoundsX(final float x) {
+        return !(x < _bounds.left + _halfDistX ||
+                x > _bounds.right - _halfDistX);
+    }
+
+    private boolean isInBoundsY(final float y) {
+        return !(y < _bounds.top + _halfDistY ||
+                y > _bounds.bottom - _halfDistY);
+    }
+
+
+    public void worldToScreen(final float worldPosX, final float worldPosY, Point screenPos) {
         screenPos.x = (int) (_screenCenterX - ((_lookAt.x - worldPosX) * _pixelsPerMeterX));
         screenPos.y = (int) (_screenCenterY - ((_lookAt.y - worldPosY) * _pixelsPerMeterY));
     }
-    public void worldToScreen(final PointF worldPos, Point screenPos){
+
+    public void worldToScreen(final PointF worldPos, Point screenPos) {
         worldToScreen(worldPos.x, worldPos.y, screenPos);
     }
-    public void worldToScreen(final Entity e, final Point screenPos){
+
+    public void worldToScreen(final Entity e, final Point screenPos) {
         worldToScreen(e._x, e._y, screenPos);
     }
 
     public boolean inView(final Entity e) {
         final float maxX = (_lookAt.x + _halfDistX);
-        final float minX = (_lookAt.x - _halfDistX)-e._width;
+        final float minX = (_lookAt.x - _halfDistX) - e._width;
         final float maxY = (_lookAt.y + _halfDistY);
-        final float minY  = (_lookAt.y - _halfDistY)-e._height;
+        final float minY = (_lookAt.y - _halfDistY) - e._height;
         return (e._x > minX && e._x < maxX)
                 && (e._y > minY && e._y < maxY);
     }
@@ -102,7 +132,7 @@ public class Viewport {
         final float right = (_lookAt.x + _halfDistX);
         final float left = (_lookAt.x - _halfDistX);
         final float bottom = (_lookAt.y + _halfDistY);
-        final float top  = (_lookAt.y - _halfDistY);
+        final float top = (_lookAt.y - _halfDistY);
         return (bounds.left < right && bounds.right > left)
                 && (bounds.top < bottom && bounds.bottom > top);
     }

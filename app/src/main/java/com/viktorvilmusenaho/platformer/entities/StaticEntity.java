@@ -15,7 +15,7 @@ public class StaticEntity extends Entity {
         loadBitmap(spriteName, xpos, ypos);
     }
 
-    void loadBitmap(final String spriteName, final int xpos, final int ypos) {
+    public void loadBitmap(final String spriteName, final int xpos, final int ypos) {
         _bitmap = _game._pool.createBitmap(spriteName, _width, _height);
     }
 

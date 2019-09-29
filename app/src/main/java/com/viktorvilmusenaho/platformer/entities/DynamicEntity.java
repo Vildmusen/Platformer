@@ -6,6 +6,7 @@ public class DynamicEntity extends StaticEntity {
 
     private static final float MAX_DELTA = 0.48f;
     static final float GRAVITY = 40f;
+    public static final float DRAG = 0.98f;
     public float _velX = 0;
     public float _velY = 0;
     public float _gravity = GRAVITY;
@@ -43,6 +44,8 @@ public class DynamicEntity extends StaticEntity {
             } else if (Entity.overlap.y > 0f) {
                 // TODO hit head
             }
+        } else if (Entity.overlap.x != 0) { // hit a wall
+            _velX = 0;
         }
     }
 }

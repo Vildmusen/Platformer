@@ -70,9 +70,12 @@ public class LevelManager {
 
     private void createEntity(final String spriteName, final int xPos, final int yPos) {
         Entity e = null;
-        if (spriteName.equalsIgnoreCase(LevelData.PLAYER_SIDE)) {
+        if (spriteName.equalsIgnoreCase(LevelData.PLAYER_FRONT)) {
             e = new Player(spriteName, xPos, yPos);
             _player = (Player) e;
+            _pool.createBitmap(LevelData.PLAYER__SIDE_1, e._width, e._height);
+//            _pool.createBitmap(LevelData.PLAYER__SIDE_2, e._width, e._height);
+//            _pool.createBitmap(LevelData.PLAYER__SIDE_3, e._width, e._height);
         } else if (spriteName.equalsIgnoreCase("lava")){
             e = new Lava(spriteName, xPos, yPos);
         } else if (spriteName.equalsIgnoreCase("spearsup_brown")){

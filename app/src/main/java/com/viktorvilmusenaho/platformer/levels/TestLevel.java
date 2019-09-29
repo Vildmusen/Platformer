@@ -17,7 +17,7 @@ public class TestLevel extends LevelData {
 
     public TestLevel(Context context) {
         _tileIdToSpriteName.put(0, "background");
-        _tileIdToSpriteName.put(1, PLAYER_SIDE);
+        _tileIdToSpriteName.put(1, PLAYER_FRONT);
         _tileIdToSpriteName.put(2, "ground");
         _tileIdToSpriteName.put(3, "ground_left");
         _tileIdToSpriteName.put(4, "ground_right");
@@ -71,7 +71,7 @@ public class TestLevel extends LevelData {
                 try{
                     spriteData[y][x] = Character.getNumericValue(tile);
                 } catch (Exception e) {
-                    Log.d(TAG, "Could read sprite value: " + tile);
+                    Log.d(TAG, "Could not read sprite value: " + tile);
                     spriteData[y][x] = -1;
                 }
             }
