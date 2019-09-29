@@ -49,10 +49,9 @@ public class JukeBox {
         }
     }
 
-    public void play(final int soundID, final int loop) {
+    public void play(final int soundID, final int loop, final int priority) {
         final float leftVolume = 1f;
         final float rightVolume = 1f;
-        final int priority = 1;
         final float rate = 1.0f;
 
         if (soundID > 0) {

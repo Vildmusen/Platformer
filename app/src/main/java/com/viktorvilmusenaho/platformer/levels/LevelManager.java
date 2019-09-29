@@ -78,7 +78,7 @@ public class LevelManager {
 //            _pool.createBitmap(LevelData.PLAYER__SIDE_3, e._width, e._height);
         } else if (spriteName.equalsIgnoreCase("lava")){
             e = new Lava(spriteName, xPos, yPos);
-        } else if (spriteName.equalsIgnoreCase("spearsup_brown")){
+        } else if (spriteName.equalsIgnoreCase(LevelData.SPEAR_LEFT) || spriteName.equalsIgnoreCase(LevelData.SPEAR_RIGHT)){
             e = new Spike(spriteName, xPos, yPos);
         } else if (spriteName.equalsIgnoreCase("coin")) {
             e = new Coin(spriteName, xPos, yPos);

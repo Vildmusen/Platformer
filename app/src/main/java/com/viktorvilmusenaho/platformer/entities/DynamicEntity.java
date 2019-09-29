@@ -44,8 +44,6 @@ public class DynamicEntity extends StaticEntity {
             } else if (Entity.overlap.y > 0f) {
                 // TODO hit head
             }
-        } else if (Entity.overlap.x != 0) { // hit a wall
-            _velX = 0;
         }
     }
 }

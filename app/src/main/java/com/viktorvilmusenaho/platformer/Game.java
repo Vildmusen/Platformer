@@ -74,7 +74,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         _holder = getHolder();
         _holder.addCallback(this);
         _holder.setFixedSize(STAGE_WIDTH, STAGE_HEIGHT);
-        _jukebox.play(JukeBox.BACKGROUND, -1);
+        _jukebox.play(JukeBox.BACKGROUND, -1, 3);
         Log.d(TAG, "Game created!");
     }
 

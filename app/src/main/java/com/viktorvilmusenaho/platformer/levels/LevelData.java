@@ -7,6 +7,8 @@ public abstract class LevelData {
     public static final String PLAYER__SIDE_2 = "player_2";
     public static final String PLAYER__SIDE_3 = "player_3";
     public static final String PLAYER_FRONT = "player_0";
+    public static final String SPEAR_LEFT = "spearsup_brown_left";
+    public static final String SPEAR_RIGHT = "spearsup_brown_right";
 
     public static final int NO_TILE = 0;
     int[][] _tiles;

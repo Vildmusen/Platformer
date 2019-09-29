@@ -23,10 +23,11 @@ public class TestLevel extends LevelData {
         _tileIdToSpriteName.put(4, "ground_right");
         _tileIdToSpriteName.put(5, "ground_background_full");
         _tileIdToSpriteName.put(6, "lava");
-        _tileIdToSpriteName.put(7, "spearsup_brown");
-        _tileIdToSpriteName.put(8, "coin");
+        _tileIdToSpriteName.put(7, SPEAR_LEFT);
+        _tileIdToSpriteName.put(8, SPEAR_RIGHT);
+        _tileIdToSpriteName.put(9, "coin");
 
-        _tiles = readFromFile(context, "testlevel2");
+        _tiles = readFromFile(context, "testlevel");
 
         updateLevelDimensions();
     }

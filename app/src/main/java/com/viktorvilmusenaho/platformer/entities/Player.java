@@ -9,18 +9,16 @@ import com.viktorvilmusenaho.platformer.input.InputManager;
 import com.viktorvilmusenaho.platformer.sound.JukeBox;
 import com.viktorvilmusenaho.platformer.utils.Utils;
 
-import java.util.ArrayList;
-
 public class Player extends DynamicEntity {
 
     static final String TAG = "Player";
     private static final float PLAYER_RUN_SPEED = 5.0f; // meter per seconds
     private static final float PLAYER_JUMP_FORCE = -(GRAVITY * 0.4f);
-    private static final float PLAYER_DASH_FORCE = 3f;
+    private static final float PLAYER_DASH_FORCE = 7f;
     private static final int PLAYER_DASH_DURATION = 7;
     private static final float PLAYER_MAX_SPEED = 13f;
     private static final float MIN_INPUT_TO_TURN = 0.05f; // 5% joystick input wont turn the character
-    private static final int DAMAGE_DURATION = 50;
+    private static final int DAMAGE_DURATION = 30;
     private static final int PLAYER_HEALTH = 6;
     private final int LEFT = 1;
     private final int RIGHT = -1;
@@ -56,17 +54,17 @@ public class Player extends DynamicEntity {
 
     @Override
     public void update(final double dt) {
-        if(_isOnGround) {
+        if (_isOnGround) {
             _velX *= (DRAG / 1.5);
         } else {
             _velX *= DRAG;
         }
         if (_damageCounter == 0) {
             _isTakingDamage = false;
+            manageInput();
         } else {
             _damageCounter--;
         }
-        manageInput();
         super.update(dt);
     }
 
@@ -81,7 +79,7 @@ public class Player extends DynamicEntity {
         }
         if (controls._isDashing && _dashFrames > 0) {
             if (_dashFrames == PLAYER_DASH_DURATION) {
-                _game._jukebox.play(JukeBox.DASH, 0);
+                _game._jukebox.play(JukeBox.DASH, 0, 2);
             }
             dash(direction);
         } else if (_isOnGround) {
@@ -90,7 +88,7 @@ public class Player extends DynamicEntity {
     }
 
     private void jump() {
-        _game._jukebox.play(JukeBox.JUMP, 0);
+        _game._jukebox.play(JukeBox.JUMP, 0, 2);
         _velY = PLAYER_JUMP_FORCE;
         _isOnGround = false;
     }
@@ -123,7 +121,7 @@ public class Player extends DynamicEntity {
             }
         } else {
             _coinCount++;
-            _game._jukebox.play(JukeBox.COIN_PICKUP, 0);
+            _game._jukebox.play(JukeBox.COIN_PICKUP, 0, 2);
         }
     }
 
@@ -133,11 +131,12 @@ public class Player extends DynamicEntity {
         } else {
             _facing = LEFT;
         }
+        _velX = -(_velX) * intensity;
         _velY = PLAYER_JUMP_FORCE * intensity;
         if (!_isTakingDamage) {
             _health--;
             _isTakingDamage = true;
-            _game._jukebox.play(JukeBox.DAMAGE, 0);
+            _game._jukebox.play(JukeBox.DAMAGE, 0, 2);
         }
         _damageCounter = (int) (DAMAGE_DURATION * intensity);
     }
