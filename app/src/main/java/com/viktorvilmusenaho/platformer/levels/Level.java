@@ -10,27 +10,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-public class TestLevel extends LevelData {
+public class Level extends LevelData {
 
-    private static final String TAG = "LEVELDATA";
+    private static final String TAG = "LEVEL";
     private final SparseArray<String> _tileIdToSpriteName = new SparseArray<>();
+    private ArrayList<String> _spriteCollection = new ArrayList<>();
 
-    public TestLevel(Context context) {
-        _tileIdToSpriteName.put(0, "background");
-        _tileIdToSpriteName.put(1, PLAYER_FRONT);
-        _tileIdToSpriteName.put(2, "ground");
-        _tileIdToSpriteName.put(3, "ground_left");
-        _tileIdToSpriteName.put(4, "ground_right");
-        _tileIdToSpriteName.put(5, "ground_background_full");
-        _tileIdToSpriteName.put(6, "lava");
-        _tileIdToSpriteName.put(7, SPEAR_LEFT);
-        _tileIdToSpriteName.put(8, SPEAR_RIGHT);
-        _tileIdToSpriteName.put(9, "coin");
-
-        _tiles = readFromFile(context, "testlevel");
-
+    public Level(Context context, String fileName) {
+        _tiles = readFromFile(context, fileName);
+        for (int i = 0; i < _spriteCollection.size(); i++) {
+            _tileIdToSpriteName.put(i, _spriteCollection.get(i));
+        }
         updateLevelDimensions();
     }
+
 
     public int[][] readFromFile(Context context, String fileName) {
         ArrayList<char[]> lines = new ArrayList<>();
@@ -47,7 +40,12 @@ public class TestLevel extends LevelData {
         BufferedReader buffReader = new BufferedReader(reader);
 
         try {
-            String line;
+            String line = "";
+            while (!((line = buffReader.readLine()).equalsIgnoreCase("-"))) {
+                String[] split = line.split(":");
+                _entityTypes.add(split);
+                _spriteCollection.add(split[0]);
+            }
             while ((line = buffReader.readLine()) != null) {
                 lines.add(line.toCharArray());
             }

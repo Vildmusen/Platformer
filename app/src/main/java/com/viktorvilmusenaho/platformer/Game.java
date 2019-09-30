@@ -17,7 +17,7 @@ import android.view.SurfaceView;
 import com.viktorvilmusenaho.platformer.entities.Entity;
 import com.viktorvilmusenaho.platformer.input.InputManager;
 import com.viktorvilmusenaho.platformer.levels.LevelManager;
-import com.viktorvilmusenaho.platformer.levels.TestLevel;
+import com.viktorvilmusenaho.platformer.levels.Level;
 import com.viktorvilmusenaho.platformer.sound.JukeBox;
 import com.viktorvilmusenaho.platformer.utils.BitmapPool;
 
@@ -28,9 +28,13 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     public static final String TAG = "Game";
     static int STAGE_WIDTH = 1280;
     static int STAGE_HEIGHT = 720;
-    private static final float METERS_TO_SHOW_X = 24f;
+    private static final float METERS_TO_SHOW_X = 20f;
     private static final float METERS_TO_SHOW_Y = 0f;
+    private static final String LEVEL_1 = "testlevel";
+    private static final String LEVEL_2 = "testlevel2";
     private static final int BG_COLOR = Color.rgb(135, 200, 240);
+    public float TIME_LIMIT = 30;
+    private static final double NANOS_TO_SECONDS = 1.0 / 1000000000;
 
     private Thread _gameThread = null;
     private volatile boolean _isRunning = false;
@@ -48,6 +52,8 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     private Viewport _camera = null;
     public final ArrayList<Entity> _visibleEntities = new ArrayList<>();
     public BitmapPool _pool = null;
+    public float _timeLeft = 0;
+    private boolean _gameOver = false;
 
     public Game(final Context context) {
         super(context);
@@ -65,7 +71,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
 
         _jukebox = new JukeBox(context);
         _pool = new BitmapPool(this);
-        _level = new LevelManager(new TestLevel(getContext()), _pool);
+        _level = new LevelManager(new Level(getContext(), LEVEL_1), _pool);
         _hud = new HUD(this);
 
         final RectF worldEdges = new RectF(0f, 0f, _level._levelWidth, _level._levelHeight);
@@ -75,6 +81,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         _holder.addCallback(this);
         _holder.setFixedSize(STAGE_WIDTH, STAGE_HEIGHT);
         _jukebox.play(JukeBox.BACKGROUND, -1, 3);
+        _timeLeft = TIME_LIMIT;
         Log.d(TAG, "Game created!");
     }
 
@@ -136,17 +143,30 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         return Resources.getSystem().getDisplayMetrics().heightPixels;
     }
 
-    private static final double NANOS_TO_SECONDS = 1.0 / 1000000000;
-
     @Override
     public void run() {
         long lastFrame = System.nanoTime();
         while (_isRunning) {
+            if(_gameOver) {
+                return;
+            }
             final double deltaTime = (System.nanoTime() - lastFrame) * NANOS_TO_SECONDS;
             lastFrame = System.nanoTime();
             update(deltaTime);
             buildVisibleSet();
             render(_camera, _visibleEntities);
+        }
+    }
+
+    private void checkGameOver() {
+        if(_timeLeft <= 0 || _level._player._health <= 0) {
+            _gameOver = true;
+        }
+    }
+
+    private void checkLevelCleared() {
+        if (_level._player._coinCount == _level._coinCount) {
+            _level.loadLevel(new Level(getContext(), LEVEL_2));
         }
     }
 
@@ -162,6 +182,9 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     private void update(final double dt) {
         _camera.lookAt(_level._player); // TODO ease it bruh
         _level.update(dt);
+        _timeLeft -= 0.01f;
+        checkGameOver();
+        checkLevelCleared();
     }
 
     // TODO provide a viewport

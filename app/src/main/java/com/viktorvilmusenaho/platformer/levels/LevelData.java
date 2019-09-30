@@ -1,15 +1,18 @@
 package com.viktorvilmusenaho.platformer.levels;
 
+import java.util.ArrayList;
+
 public abstract class LevelData {
 
-    public static final String NULLSPRITE = "nullsprite";
-    public static final String PLAYER__SIDE_1 = "player_1";
-    public static final String PLAYER__SIDE_2 = "player_2";
-    public static final String PLAYER__SIDE_3 = "player_3";
-    public static final String PLAYER_FRONT = "player_0";
-    public static final String SPEAR_LEFT = "spearsup_brown_left";
-    public static final String SPEAR_RIGHT = "spearsup_brown_right";
+    public String NULLSPRITE = "nullsprite";
+    public String BACKGROUND = "background";
+    public String PLAYER = "player_0";
+    public String SPEAR_LEFT = "spearsup_brown_left";
+    public String SPEAR_RIGHT = "spearsup_brown_right";
+    public String LAVA = "spearsup_brown_left";
+    public String COIN = "coin";
 
+    public ArrayList<String[]> _entityTypes = new ArrayList<>();
     public static final int NO_TILE = 0;
     int[][] _tiles;
     int _height = 0;

@@ -1,7 +1,9 @@
 package com.viktorvilmusenaho.platformer.entities;
 
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 
@@ -17,13 +19,21 @@ public class Player extends DynamicEntity {
     private static final float PLAYER_DASH_FORCE = 7f;
     private static final int PLAYER_DASH_DURATION = 7;
     private static final float PLAYER_MAX_SPEED = 13f;
-    private static final float MIN_INPUT_TO_TURN = 0.05f; // 5% joystick input wont turn the character
-    private static final int DAMAGE_DURATION = 30;
+    private static final float DEAD_ZONE = 0.05f; // 5% joystick input wont turn the character
+    private static final int DAMAGE_DURATION = 50;
     private static final int PLAYER_HEALTH = 6;
+    private static final int MIN_ANIMATION_SPEED = 15;
+    private static final int MAX_ANIMATION_SPEED = 60;
+    private static final String PLAYER_FRONT = "player_0";
+    private static final String PLAYER_SIDE_1 = "player_1";
+    private static final String PLAYER_SIDE_2 = "player_2";
+    private static final String PLAYER_SIDE_3 = "player_3";
     private final int LEFT = 1;
     private final int RIGHT = -1;
 
-    public int _health = 0;
+    private int _animationCount = 0;
+    private float _animationTotalLength = 20;
+    public int _health = PLAYER_HEALTH;
     private int _facing = RIGHT;
     private int _damageCounter = 0;
     private boolean _isTakingDamage = false;
@@ -34,17 +44,12 @@ public class Player extends DynamicEntity {
         super(spriteName, xPos, yPos);
         _width = DEFAULT_DIMENSION;
         _height = DEFAULT_DIMENSION;
-        _health = PLAYER_HEALTH;
         loadBitmap(spriteName, xPos, yPos);
     }
 
     @Override
     public void render(Canvas canvas, Matrix transform, Paint paint) {
-        if (Math.abs(_velX) > 0.5f) {
-            _bitmap = _game._pool.getBitmap("player_1_1.0_1.0");
-        } else {
-            _bitmap = _game._pool.getBitmap("player_0_1.0_1.0");
-        }
+        animateDamage(paint);
         transform.preScale(_facing, 1);
         if (_facing == RIGHT) {
             transform.postTranslate(_game.worldToScreenX(_width), 0);
@@ -59,13 +64,52 @@ public class Player extends DynamicEntity {
         } else {
             _velX *= DRAG;
         }
+        if(_damageCounter < DAMAGE_DURATION / 2) {
+            manageInput();
+        }
         if (_damageCounter == 0) {
             _isTakingDamage = false;
-            manageInput();
         } else {
             _damageCounter--;
         }
+        if (Math.abs(_velX) > 0.5f) {
+            walk();
+        } else {
+            loadBitmap(PLAYER_FRONT, (int) _x, (int) _y);
+            _animationCount = 0;
+        }
         super.update(dt);
+    }
+
+    private void animateDamage(Paint paint) {
+        if (_damageCounter > 0) {
+            ColorMatrix saturation = new ColorMatrix();
+            saturation.setSaturation(0f);
+            paint.setColorFilter(new ColorMatrixColorFilter(saturation));
+        } else {
+            paint.setColorFilter(new ColorFilter());
+        }
+    }
+
+    private void walk() {
+        _animationTotalLength = MAX_ANIMATION_SPEED - (MAX_ANIMATION_SPEED * (Math.abs(_velX) / PLAYER_MAX_SPEED));
+        _animationTotalLength = Utils.clamp(_animationTotalLength, MIN_ANIMATION_SPEED, MAX_ANIMATION_SPEED);
+        if (_animationCount > 0 && _animationCount < (_animationTotalLength * 0.25)) {
+            loadBitmap(PLAYER_SIDE_1, (int) _x, (int) _y);
+        }
+        if (_animationCount > (_animationTotalLength * 0.25) && _animationCount < (_animationTotalLength * 0.5)) {
+            loadBitmap(PLAYER_SIDE_2, (int) _x, (int) _y);
+        }
+        if (_animationCount > (_animationTotalLength * 0.5) && _animationCount < (_animationTotalLength * 0.75)) {
+            loadBitmap(PLAYER_SIDE_1, (int) _x, (int) _y);
+        }
+        if (_animationCount > (_animationTotalLength * 0.75) && _animationCount < _animationTotalLength) {
+            loadBitmap(PLAYER_SIDE_3, (int) _x, (int) _y);
+        }
+        _animationCount += _animationTick;
+        if (_animationCount >= _animationTotalLength) {
+            _animationCount = 0;
+        }
     }
 
     private void manageInput() {
@@ -88,12 +132,14 @@ public class Player extends DynamicEntity {
     }
 
     private void jump() {
+        freezeAnimation();
         _game._jukebox.play(JukeBox.JUMP, 0, 2);
         _velY = PLAYER_JUMP_FORCE;
         _isOnGround = false;
     }
 
     private void dash(final float direction) {
+        freezeAnimation();
         _velY = -(GRAVITY * 0.2f);
         _velX += PLAYER_DASH_FORCE * direction;
         _isOnGround = false;
@@ -101,7 +147,7 @@ public class Player extends DynamicEntity {
     }
 
     private void updateFacingDirection(final float controlDirection) {
-        if (Math.abs(controlDirection) < MIN_INPUT_TO_TURN) {
+        if (Math.abs(controlDirection) < DEAD_ZONE) {
             return;
         }
         if (controlDirection < 0) {
@@ -115,7 +161,7 @@ public class Player extends DynamicEntity {
     public void onCollision(Entity that) {
         if (!(that instanceof Coin)) {
             super.onCollision(that);
-            if (that instanceof EnemyStaticEntity) {
+            if (that instanceof EnemyStaticEntity && !_isTakingDamage) {
                 final float intensity = ((EnemyStaticEntity) that)._intensity;
                 reactToEntity(intensity);
             }

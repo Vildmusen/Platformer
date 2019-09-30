@@ -11,6 +11,7 @@ public class DynamicEntity extends StaticEntity {
     public float _velY = 0;
     public float _gravity = GRAVITY;
     boolean _isOnGround = false;
+    public int _animationTick = 1;
 
     public DynamicEntity(String spriteName, int xPos, int yPos) {
         super(spriteName, xPos, yPos);
@@ -41,9 +42,21 @@ public class DynamicEntity extends StaticEntity {
             _velY = 0;
             if (Entity.overlap.y < 0f) { // we've hit out feet
                 _isOnGround = true;
+                continueAnimation();
             } else if (Entity.overlap.y > 0f) {
                 // TODO hit head
             }
         }
+        if (Entity.overlap.x != 0 && !(that instanceof EnemyStaticEntity)) {
+            _velX = 0;
+        }
+    }
+
+    public void continueAnimation() {
+        _animationTick = 1;
+    }
+
+    public void freezeAnimation() {
+        _animationTick = 0;
     }
 }

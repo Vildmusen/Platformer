@@ -1,5 +1,7 @@
 package com.viktorvilmusenaho.platformer.levels;
 
+import android.util.Log;
+
 import com.viktorvilmusenaho.platformer.entities.Coin;
 import com.viktorvilmusenaho.platformer.entities.Entity;
 import com.viktorvilmusenaho.platformer.entities.Lava;
@@ -12,19 +14,62 @@ import java.util.ArrayList;
 
 public class LevelManager {
 
+    public static final String TAG = "LEVEL_MANAGER";
+
     public int _levelHeight = 0;
     public int _levelWidth = 0;
 
     public final ArrayList<Entity> _entities = new ArrayList<>();
     private final ArrayList<Entity> _entitiesToAdd = new ArrayList<>();
     private final ArrayList<Entity> _entitiesToRemove = new ArrayList<>();
+
+    private LevelData _data = null;
     public Player _player = null;
     private BitmapPool _pool = null;
-
+    public int _coinCount = 0;
 
     public LevelManager(final LevelData map, BitmapPool pool) {
         _pool = pool;
-        loadMapAssets(map);
+        loadLevel(map);
+    }
+
+    public void loadLevel(final LevelData map){
+        destroy();
+        _data = map;
+        loadEntityTypes();
+        loadMapAssets();
+        _coinCount = numberOfCoins();
+    }
+
+    private void loadEntityTypes() {
+        for (String[] keyTypePair : _data._entityTypes) {
+            int key = -1;
+            try {
+                key = Integer.parseInt(keyTypePair[1]);
+            } catch (Exception e) {
+                Log.d(TAG, String.format("could not read entity type: %s, %s ", keyTypePair[0], keyTypePair[1]));
+            }
+            switch (key) {
+                case 0:
+                    _data.BACKGROUND = keyTypePair[0];
+                    break;
+                case 1:
+                    _data.PLAYER = keyTypePair[0];
+                    break;
+                case 2:
+                    _data.LAVA = keyTypePair[0];
+                    break;
+                case 3:
+                    _data.SPEAR_LEFT = keyTypePair[0];
+                    break;
+                case 4:
+                    _data.SPEAR_RIGHT = keyTypePair[0];
+                    break;
+                case 5:
+                    _data.COIN = keyTypePair[0];
+                    break;
+            }
+        }
     }
 
     public void update(final double dt) {
@@ -50,19 +95,19 @@ public class LevelManager {
         }
     }
 
-    private void loadMapAssets(final LevelData map) {
+    private void loadMapAssets() {
         cleanUp();
-        _levelHeight = map._height;
-        _levelWidth = map._width;
+        _levelHeight = _data._height;
+        _levelWidth = _data._width;
 
         for (int y = 0; y < _levelHeight; y++) {
-            final int[] row = map.getRow(y);
+            final int[] row = _data.getRow(y);
             for (int x = 0; x < row.length; x++) {
                 final int tileID = row[x];
                 if (tileID == LevelData.NO_TILE) {
                     continue;
                 }
-                final String spriteName = map.getSpriteName(tileID);
+                final String spriteName = _data.getSpriteName(tileID);
                 createEntity(spriteName, x, y);
             }
         }
@@ -70,17 +115,14 @@ public class LevelManager {
 
     private void createEntity(final String spriteName, final int xPos, final int yPos) {
         Entity e = null;
-        if (spriteName.equalsIgnoreCase(LevelData.PLAYER_FRONT)) {
+        if (spriteName.equalsIgnoreCase(_data.PLAYER)) {
             e = new Player(spriteName, xPos, yPos);
             _player = (Player) e;
-            _pool.createBitmap(LevelData.PLAYER__SIDE_1, e._width, e._height);
-//            _pool.createBitmap(LevelData.PLAYER__SIDE_2, e._width, e._height);
-//            _pool.createBitmap(LevelData.PLAYER__SIDE_3, e._width, e._height);
-        } else if (spriteName.equalsIgnoreCase("lava")){
+        } else if (spriteName.equalsIgnoreCase(_data.LAVA)) {
             e = new Lava(spriteName, xPos, yPos);
-        } else if (spriteName.equalsIgnoreCase(LevelData.SPEAR_LEFT) || spriteName.equalsIgnoreCase(LevelData.SPEAR_RIGHT)){
+        } else if (spriteName.equalsIgnoreCase(_data.SPEAR_LEFT) || spriteName.equalsIgnoreCase(_data.SPEAR_RIGHT)) {
             e = new Spike(spriteName, xPos, yPos);
-        } else if (spriteName.equalsIgnoreCase("coin")) {
+        } else if (spriteName.equalsIgnoreCase(_data.COIN)) {
             e = new Coin(spriteName, xPos, yPos);
         } else {
             e = new StaticEntity(spriteName, xPos, yPos);
@@ -109,6 +151,16 @@ public class LevelManager {
         if (e != null) {
             _entitiesToRemove.add(e);
         }
+    }
+
+    private int numberOfCoins() {
+        int count = 0;
+        for (Entity e : _entitiesToAdd) {
+            if (e instanceof Coin) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private void cleanUp() {
