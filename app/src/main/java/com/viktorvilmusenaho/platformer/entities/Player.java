@@ -24,6 +24,8 @@ public class Player extends DynamicEntity {
     private static final int PLAYER_HEALTH = 6;
     private static final int MIN_ANIMATION_SPEED = 15;
     private static final int MAX_ANIMATION_SPEED = 60;
+    private static final float MAX_RUN_TILT = 15;
+    private final static float DASH_TILT = 85;
     private static final String PLAYER_FRONT = "player_0";
     private static final String PLAYER_SIDE_1 = "player_1";
     private static final String PLAYER_SIDE_2 = "player_2";
@@ -39,6 +41,7 @@ public class Player extends DynamicEntity {
     private boolean _isTakingDamage = false;
     public int _coinCount = 0;
     private int _dashFrames = PLAYER_DASH_DURATION;
+    private float _tilt;
 
     public Player(final String spriteName, final int xPos, final int yPos) {
         super(spriteName, xPos, yPos);
@@ -50,35 +53,47 @@ public class Player extends DynamicEntity {
     @Override
     public void render(Canvas canvas, Matrix transform, Paint paint) {
         animateDamage(paint);
+        _tilt = Math.abs(_velX) / PLAYER_MAX_SPEED * MAX_RUN_TILT;
+        transform.preRotate(-(_tilt * _facing));
         transform.preScale(_facing, 1);
-        if (_facing == RIGHT) {
-            transform.postTranslate(_game.worldToScreenX(_width), 0);
-        }
+        if (_facing == RIGHT) { transform.postTranslate(_game.worldToScreenX(_width), 0); }
         super.render(canvas, transform, paint);
     }
 
     @Override
     public void update(final double dt) {
-        if (_isOnGround) {
-            _velX *= (DRAG / 1.5);
-        } else {
-            _velX *= DRAG;
-        }
+        updateDrag();
+        updateDamageCounter();
         if(_damageCounter < DAMAGE_DURATION / 2) {
             manageInput();
         }
-        if (_damageCounter == 0) {
-            _isTakingDamage = false;
-        } else {
-            _damageCounter--;
-        }
+        updateMovement();
+        super.update(dt);
+    }
+
+    private void updateMovement() {
         if (Math.abs(_velX) > 0.5f) {
             walk();
         } else {
             loadBitmap(PLAYER_FRONT, (int) _x, (int) _y);
             _animationCount = 0;
         }
-        super.update(dt);
+    }
+
+    private void updateDamageCounter() {
+        if (_damageCounter == 0) {
+            _isTakingDamage = false;
+        } else {
+            _damageCounter--;
+        }
+    }
+
+    private void updateDrag() {
+        if (_isOnGround) {
+            _velX *= (DRAG / 1.5);
+        } else {
+            _velX *= DRAG;
+        }
     }
 
     private void animateDamage(Paint paint) {
@@ -88,27 +103,6 @@ public class Player extends DynamicEntity {
             paint.setColorFilter(new ColorMatrixColorFilter(saturation));
         } else {
             paint.setColorFilter(new ColorFilter());
-        }
-    }
-
-    private void walk() {
-        _animationTotalLength = MAX_ANIMATION_SPEED - (MAX_ANIMATION_SPEED * (Math.abs(_velX) / PLAYER_MAX_SPEED));
-        _animationTotalLength = Utils.clamp(_animationTotalLength, MIN_ANIMATION_SPEED, MAX_ANIMATION_SPEED);
-        if (_animationCount > 0 && _animationCount < (_animationTotalLength * 0.25)) {
-            loadBitmap(PLAYER_SIDE_1, (int) _x, (int) _y);
-        }
-        if (_animationCount > (_animationTotalLength * 0.25) && _animationCount < (_animationTotalLength * 0.5)) {
-            loadBitmap(PLAYER_SIDE_2, (int) _x, (int) _y);
-        }
-        if (_animationCount > (_animationTotalLength * 0.5) && _animationCount < (_animationTotalLength * 0.75)) {
-            loadBitmap(PLAYER_SIDE_1, (int) _x, (int) _y);
-        }
-        if (_animationCount > (_animationTotalLength * 0.75) && _animationCount < _animationTotalLength) {
-            loadBitmap(PLAYER_SIDE_3, (int) _x, (int) _y);
-        }
-        _animationCount += _animationTick;
-        if (_animationCount >= _animationTotalLength) {
-            _animationCount = 0;
         }
     }
 
@@ -131,6 +125,25 @@ public class Player extends DynamicEntity {
         }
     }
 
+    private void walk() {
+        _animationTotalLength = MAX_ANIMATION_SPEED - (MAX_ANIMATION_SPEED * (Math.abs(_velX) / PLAYER_MAX_SPEED));
+        _animationTotalLength = Utils.clamp(_animationTotalLength, MIN_ANIMATION_SPEED, MAX_ANIMATION_SPEED);
+        if (_animationCount > 0 && _animationCount < (_animationTotalLength * 0.25)) {
+            loadBitmap(PLAYER_SIDE_1, (int) _x, (int) _y);
+        }
+        if (_animationCount > (_animationTotalLength * 0.25) && _animationCount < (_animationTotalLength * 0.5)) {
+            loadBitmap(PLAYER_SIDE_2, (int) _x, (int) _y);
+        }
+        if (_animationCount > (_animationTotalLength * 0.5) && _animationCount < (_animationTotalLength * 0.75)) {
+            loadBitmap(PLAYER_SIDE_1, (int) _x, (int) _y);
+        }
+        if (_animationCount > (_animationTotalLength * 0.75) && _animationCount < _animationTotalLength) {
+            loadBitmap(PLAYER_SIDE_3, (int) _x, (int) _y);
+        }
+        int nextTick = _animationCount + _animationTick;
+        _animationCount = (nextTick >= _animationTotalLength ? 0 : nextTick);
+    }
+
     private void jump() {
         freezeAnimation();
         _game._jukebox.play(JukeBox.JUMP, 0, 2);
@@ -140,6 +153,7 @@ public class Player extends DynamicEntity {
 
     private void dash(final float direction) {
         freezeAnimation();
+        _tilt = -85;
         _velY = -(GRAVITY * 0.2f);
         _velX += PLAYER_DASH_FORCE * direction;
         _isOnGround = false;

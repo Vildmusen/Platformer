@@ -30,11 +30,6 @@ public class LevelManager {
 
     public LevelManager(final LevelData map, BitmapPool pool) {
         _pool = pool;
-        loadLevel(map);
-    }
-
-    public void loadLevel(final LevelData map){
-        destroy();
         _data = map;
         loadEntityTypes();
         loadMapAssets();

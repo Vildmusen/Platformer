@@ -30,8 +30,10 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     static int STAGE_HEIGHT = 720;
     private static final float METERS_TO_SHOW_X = 20f;
     private static final float METERS_TO_SHOW_Y = 0f;
-    private static final String LEVEL_1 = "testlevel";
-    private static final String LEVEL_2 = "testlevel2";
+    private final String LEVEL_1 = getResources().getString(R.string.level1);
+    private final String LEVEL_2 = getResources().getString(R.string.level2);
+    private final String LEVEL_3 = getResources().getString(R.string.level3);
+    private String CURRENT_LEVEL = LEVEL_1;
     private static final int BG_COLOR = Color.rgb(135, 200, 240);
     public float TIME_LIMIT = 30;
     private static final double NANOS_TO_SECONDS = 1.0 / 1000000000;
@@ -68,21 +70,22 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         STAGE_HEIGHT = TARGET_HEIGHT;
         Entity._game = this;
         _camera = new Viewport(STAGE_WIDTH, STAGE_HEIGHT, METERS_TO_SHOW_X, METERS_TO_SHOW_Y);
-
         _jukebox = new JukeBox(context);
         _pool = new BitmapPool(this);
-        _level = new LevelManager(new Level(getContext(), LEVEL_1), _pool);
-        _hud = new HUD(this);
+        loadLevel(LEVEL_1);
+        _jukebox.play(JukeBox.BACKGROUND, -1, 3);
+        Log.d(TAG, "Game created!");
+    }
 
+    private void loadLevel(final String levelName) {
+        _level = new LevelManager(new Level(getContext(), levelName), _pool);
+        _hud = new HUD(this);
         final RectF worldEdges = new RectF(0f, 0f, _level._levelWidth, _level._levelHeight);
         _camera.setBounds(worldEdges);
-
         _holder = getHolder();
         _holder.addCallback(this);
         _holder.setFixedSize(STAGE_WIDTH, STAGE_HEIGHT);
-        _jukebox.play(JukeBox.BACKGROUND, -1, 3);
         _timeLeft = TIME_LIMIT;
-        Log.d(TAG, "Game created!");
     }
 
     public Game(Context context, AttributeSet attrs) {
@@ -100,11 +103,11 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         init(context);
     }
 
-    public InputManager getControls(){
+    public InputManager getControls() {
         return _controls;
     }
 
-    public void setControls(final  InputManager controls) {
+    public void setControls(final InputManager controls) {
         _controls.onPause();
         _controls.onStop();
         _controls = controls;
@@ -147,9 +150,6 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     public void run() {
         long lastFrame = System.nanoTime();
         while (_isRunning) {
-            if(_gameOver) {
-                return;
-            }
             final double deltaTime = (System.nanoTime() - lastFrame) * NANOS_TO_SECONDS;
             lastFrame = System.nanoTime();
             update(deltaTime);
@@ -159,14 +159,17 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     }
 
     private void checkGameOver() {
-        if(_timeLeft <= 0 || _level._player._health <= 0) {
+        if (_timeLeft <= 0 || _level._player._health <= 0) {
             _gameOver = true;
         }
     }
 
     private void checkLevelCleared() {
         if (_level._player._coinCount == _level._coinCount) {
-            _level.loadLevel(new Level(getContext(), LEVEL_2));
+            CURRENT_LEVEL =
+                    (CURRENT_LEVEL.equalsIgnoreCase(LEVEL_1) ? LEVEL_2 :
+                            (CURRENT_LEVEL.equalsIgnoreCase(LEVEL_2) ? LEVEL_3 : LEVEL_1));
+            loadLevel(CURRENT_LEVEL);
         }
     }
 
@@ -180,11 +183,22 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     }
 
     private void update(final double dt) {
+        if (_gameOver) {
+            gameOverUpdate();
+            return;
+        }
         _camera.lookAt(_level._player); // TODO ease it bruh
         _level.update(dt);
         _timeLeft -= 0.01f;
         checkGameOver();
         checkLevelCleared();
+    }
+
+    private void gameOverUpdate() {
+        if (_controls._isJumping) {
+            loadLevel(LEVEL_1);
+            _gameOver = false;
+        }
     }
 
     // TODO provide a viewport
@@ -196,11 +210,15 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         }
         try {
             _canvas.drawColor(BG_COLOR);
-            for (final Entity e : visibleEntities) {
-                _transform.reset();
-                camera.worldToScreen(e, _position);
-                _transform.postTranslate(_position.x, _position.y);
-                e.render(_canvas, _transform, _paint);
+            if(!_gameOver) {
+                for (final Entity e : visibleEntities) {
+                    _transform.reset();
+                    camera.worldToScreen(e, _position);
+                    _transform.postTranslate(_position.x, _position.y);
+                    e.render(_canvas, _transform, _paint);
+                }
+            } else {
+                _hud.renderGameOver(_canvas, _paint);
             }
             _hud.renderHUD(_canvas, _transform, _paint);
         } finally {
@@ -252,7 +270,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         _controls = null;
         _jukebox.destroy();
         Entity._game = null;
-        if(_pool != null){
+        if (_pool != null) {
             _pool.empty(); // safe but redundant, the LevelManager empties the pool as well.
         }
         _holder.removeCallback(this);

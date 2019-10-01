@@ -25,11 +25,11 @@ public class HUD {
 
     public HUD(Game game) {
         _game = game;
-        _player = game._level._player;
-        _halfHearth = game._pool.createBitmap(PLAYER_HEALTH_HALF, 0, 0);
-        _refresh = game._pool.createBitmap(REFRESH, 2, 2);
-        if ((_coin = game._pool.getBitmap(COIN)) == null) {
-            _coin = game._pool.createBitmap(COIN, 1, 1);
+        _player = _game._level._player;
+        _halfHearth = _game._pool.createBitmap(PLAYER_HEALTH_HALF, 0, 0);
+        _refresh = _game._pool.createBitmap(REFRESH, 2, 2);
+        if ((_coin = _game._pool.getBitmap(COIN)) == null) {
+            _coin = _game._pool.createBitmap(COIN, 1, 1);
         }
         _textSize = _coin.getHeight() / 2;
         _coinCount =  _game._level._coinCount;
@@ -75,9 +75,6 @@ public class HUD {
         if(timeLeft > _game.TIME_LIMIT * 0.95) {
             renderStartMessage(canvas, paint);
         }
-        if(_player._health <= 0 || _game._timeLeft <= 0) {
-            renderGameOver(canvas, transform, paint);
-        }
     }
 
     private void renderStartMessage(Canvas canvas, Paint paint) {
@@ -102,15 +99,12 @@ public class HUD {
         paint.setTextSize((int) size);
     }
 
-    public void renderGameOver(Canvas canvas, Matrix transform, Paint paint){
+    public void renderGameOver(Canvas canvas, Paint paint){
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize((int) (_textSize * 1.5));
         String text1 = "GAME OVER";
-        String text2 = "Press here to try again!";
+        String text2 = "Press A to try again!";
         canvas.drawText(text1, Game.STAGE_WIDTH / 2, Game.STAGE_HEIGHT * 0.4f, paint);
         canvas.drawText(text2, Game.STAGE_WIDTH / 2, Game.STAGE_HEIGHT * 0.5f, paint);
-        transform.reset();
-        transform.postTranslate((Game.STAGE_WIDTH / 2) - (_refresh.getWidth() / 2), Game.STAGE_HEIGHT * 0.6f);
-        canvas.drawBitmap(_refresh, transform, paint);
     }
 }
