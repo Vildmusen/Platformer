@@ -22,6 +22,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        _game.onStart();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         _game.onResume();
@@ -31,6 +37,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         _game.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        _game.onStop();
     }
 
     @Override

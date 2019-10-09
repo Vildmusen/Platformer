@@ -24,8 +24,7 @@ public class Player extends DynamicEntity {
     private static final int PLAYER_HEALTH = 6;
     private static final int MIN_ANIMATION_SPEED = 15;
     private static final int MAX_ANIMATION_SPEED = 60;
-    private static final float MAX_RUN_TILT = 15;
-    private final static float DASH_TILT = 85;
+    private static final float MAX_RUN_TILT = 10;
     private static final String PLAYER_FRONT = "player_0";
     private static final String PLAYER_SIDE_1 = "player_1";
     private static final String PLAYER_SIDE_2 = "player_2";
@@ -42,12 +41,18 @@ public class Player extends DynamicEntity {
     public int _coinCount = 0;
     private int _dashFrames = PLAYER_DASH_DURATION;
     private float _tilt;
+    private ColorMatrixColorFilter _NoSaturationFilter = null;
+    private ColorFilter _SaturationFilter = null;
 
     public Player(final String spriteName, final int xPos, final int yPos) {
         super(spriteName, xPos, yPos);
         _width = DEFAULT_DIMENSION;
         _height = DEFAULT_DIMENSION;
         loadBitmap(spriteName, xPos, yPos);
+        ColorMatrix saturation = new ColorMatrix();
+        saturation.setSaturation(0f);
+        _NoSaturationFilter = new ColorMatrixColorFilter(saturation);
+        _SaturationFilter = new ColorFilter();
     }
 
     @Override
@@ -98,11 +103,9 @@ public class Player extends DynamicEntity {
 
     private void animateDamage(Paint paint) {
         if (_damageCounter > 0) {
-            ColorMatrix saturation = new ColorMatrix();
-            saturation.setSaturation(0f);
-            paint.setColorFilter(new ColorMatrixColorFilter(saturation));
+            paint.setColorFilter(_NoSaturationFilter);
         } else {
-            paint.setColorFilter(new ColorFilter());
+            paint.setColorFilter(_SaturationFilter);
         }
     }
 
@@ -153,7 +156,6 @@ public class Player extends DynamicEntity {
 
     private void dash(final float direction) {
         freezeAnimation();
-        _tilt = -85;
         _velY = -(GRAVITY * 0.2f);
         _velX += PLAYER_DASH_FORCE * direction;
         _isOnGround = false;
@@ -186,11 +188,7 @@ public class Player extends DynamicEntity {
     }
 
     private void reactToEntity(float intensity) {
-        if (_facing == LEFT) {
-            _facing = RIGHT;
-        } else {
-            _facing = LEFT;
-        }
+        _facing = _facing == LEFT ? RIGHT : LEFT;
         _velX = -(_velX) * intensity;
         _velY = PLAYER_JUMP_FORCE * intensity;
         if (!_isTakingDamage) {

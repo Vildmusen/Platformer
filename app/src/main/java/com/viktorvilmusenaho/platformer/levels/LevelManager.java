@@ -3,6 +3,8 @@ package com.viktorvilmusenaho.platformer.levels;
 import android.util.Log;
 
 import com.viktorvilmusenaho.platformer.entities.Coin;
+import com.viktorvilmusenaho.platformer.entities.DynamicEntity;
+import com.viktorvilmusenaho.platformer.entities.DynamicEntityInformation;
 import com.viktorvilmusenaho.platformer.entities.Entity;
 import com.viktorvilmusenaho.platformer.entities.Lava;
 import com.viktorvilmusenaho.platformer.entities.Player;
@@ -10,9 +12,10 @@ import com.viktorvilmusenaho.platformer.entities.Spike;
 import com.viktorvilmusenaho.platformer.entities.StaticEntity;
 import com.viktorvilmusenaho.platformer.utils.BitmapPool;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class LevelManager {
+public class LevelManager implements Serializable {
 
     public static final String TAG = "LEVEL_MANAGER";
 
@@ -109,6 +112,18 @@ public class LevelManager {
     }
 
     private void createEntity(final String spriteName, final int xPos, final int yPos) {
+        Entity e = initEntity(spriteName, xPos, yPos);
+        addEntity(e);
+    }
+
+    private void createEntity(final String spriteName, final int xPos, final int yPos, final float velX, final float velY) {
+        Entity e = initEntity(spriteName, xPos, yPos);
+        ((DynamicEntity) e)._velX = velX;
+        ((DynamicEntity) e)._velY = velY;
+        addEntity(e);
+    }
+
+    private Entity initEntity(final String spriteName, final int xPos, final int yPos) {
         Entity e = null;
         if (spriteName.equalsIgnoreCase(_data.PLAYER)) {
             e = new Player(spriteName, xPos, yPos);
@@ -122,10 +137,10 @@ public class LevelManager {
         } else {
             e = new StaticEntity(spriteName, xPos, yPos);
         }
-        addEntity(e);
+        return e;
     }
 
-    private void addAndRemoveEntities() {
+    public void addAndRemoveEntities() {
         for (Entity e : _entitiesToRemove) {
             _entities.remove(e);
         }
@@ -136,7 +151,7 @@ public class LevelManager {
         _entitiesToAdd.clear();
     }
 
-    public void addEntity(final Entity e) {
+    private void addEntity(final Entity e) {
         if (e != null) {
             _entitiesToAdd.add(e);
         }
@@ -148,7 +163,30 @@ public class LevelManager {
         }
     }
 
-    private int numberOfCoins() {
+    public void addUpdatedDynamicEntities(ArrayList<DynamicEntityInformation> entityInfo) {
+        for (DynamicEntityInformation e : entityInfo) {
+            createEntity(e.spriteName, (int) e.x, (int) e.y, e.velX, e.velY);
+        }
+    }
+
+    public void removeDynamicEntities() {
+        removeFromList(_entities);
+        removeFromList(_entitiesToAdd);
+    }
+
+    private void removeFromList(ArrayList<Entity> entities) {
+        ArrayList<Entity> toRemove = new ArrayList<>();
+        for(Entity e : entities) {
+            if (e instanceof DynamicEntity) {
+                toRemove.add(e);
+            }
+        }
+        for (Entity e : toRemove) {
+            entities.remove(e);
+        }
+    }
+
+    public int numberOfCoins() {
         int count = 0;
         for (Entity e : _entitiesToAdd) {
             if (e instanceof Coin) {

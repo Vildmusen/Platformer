@@ -3,7 +3,6 @@ package com.viktorvilmusenaho.platformer;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
@@ -13,29 +12,33 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-
 import com.viktorvilmusenaho.platformer.entities.Entity;
 import com.viktorvilmusenaho.platformer.input.InputManager;
 import com.viktorvilmusenaho.platformer.levels.LevelManager;
 import com.viktorvilmusenaho.platformer.levels.Level;
 import com.viktorvilmusenaho.platformer.sound.JukeBox;
 import com.viktorvilmusenaho.platformer.utils.BitmapPool;
+import com.viktorvilmusenaho.platformer.utils.SaveObject;
+import com.viktorvilmusenaho.platformer.utils.Serializer;
 
 import java.util.ArrayList;
 
 public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callback {
 
     public static final String TAG = "Game";
-    static int STAGE_WIDTH = 1280;
-    static int STAGE_HEIGHT = 720;
-    private static final float METERS_TO_SHOW_X = 20f;
-    private static final float METERS_TO_SHOW_Y = 0f;
+    public int STAGE_WIDTH = getResources().getInteger(R.integer.screen_standard_stage_width);
+    public int STAGE_HEIGHT = getResources().getInteger(R.integer.screen_standard_stage_height);
+    private final float METERS_TO_SHOW_X = getResources().getInteger(R.integer.meters_to_show_x);
+    private final float METERS_TO_SHOW_Y = getResources().getInteger(R.integer.meters_to_show_y);
     private final String LEVEL_1 = getResources().getString(R.string.level1);
     private final String LEVEL_2 = getResources().getString(R.string.level2);
     private final String LEVEL_3 = getResources().getString(R.string.level3);
-    private String CURRENT_LEVEL = LEVEL_1;
-    private static final int BG_COLOR = Color.rgb(135, 200, 240);
-    public float TIME_LIMIT = 30;
+    public float TIME_LIMIT_LEVEL_1 = getResources().getInteger(R.integer.level1_time);
+    public float TIME_LIMIT_LEVEL_2 = getResources().getInteger(R.integer.level2_time);
+    public float TIME_LIMIT_LEVEL_3 = getResources().getInteger(R.integer.level3_time);
+    public int CURRENT_LEVEL = 1;
+    public float CURRENT_LEVEL_TIME_LIMIT = TIME_LIMIT_LEVEL_1;
+    private final int BG_COLOR = getResources().getInteger(R.integer.backgroundColor);
     private static final double NANOS_TO_SECONDS = 1.0 / 1000000000;
 
     private Thread _gameThread = null;
@@ -45,9 +48,12 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     private final Paint _paint = new Paint();
     private Canvas _canvas = null;
     private final Matrix _transform = new Matrix();
-
+    private Serializer _serializer = null;
     public JukeBox _jukebox = null;
 
+    private boolean _saveDataExists = false;
+    private SaveObject _saveData = null;
+    private static final Point _position = new Point();
     public LevelManager _level = null;
     private InputManager _controls = new InputManager();
     private HUD _hud = null;
@@ -72,20 +78,39 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         _camera = new Viewport(STAGE_WIDTH, STAGE_HEIGHT, METERS_TO_SHOW_X, METERS_TO_SHOW_Y);
         _jukebox = new JukeBox(context);
         _pool = new BitmapPool(this);
-        loadLevel(LEVEL_1);
+        loadLevel(1);
         _jukebox.play(JukeBox.BACKGROUND, -1, 3);
+        _serializer = new Serializer(this);
         Log.d(TAG, "Game created!");
     }
 
-    private void loadLevel(final String levelName) {
-        _level = new LevelManager(new Level(getContext(), levelName), _pool);
+    private void loadLevel(final int level) {
+        _level = new LevelManager(new Level(getContext(), setLevel(level)), _pool);
         _hud = new HUD(this);
         final RectF worldEdges = new RectF(0f, 0f, _level._levelWidth, _level._levelHeight);
         _camera.setBounds(worldEdges);
         _holder = getHolder();
         _holder.addCallback(this);
         _holder.setFixedSize(STAGE_WIDTH, STAGE_HEIGHT);
-        _timeLeft = TIME_LIMIT;
+        _timeLeft = CURRENT_LEVEL_TIME_LIMIT;
+    }
+
+    private String setLevel(final int level) {
+        switch (level) {
+            case 1:
+                CURRENT_LEVEL_TIME_LIMIT = TIME_LIMIT_LEVEL_1;
+                CURRENT_LEVEL = 1;
+                return LEVEL_1;
+            case 2:
+                CURRENT_LEVEL_TIME_LIMIT = TIME_LIMIT_LEVEL_2;
+                CURRENT_LEVEL = 2;
+                return LEVEL_2;
+            case 3:
+                CURRENT_LEVEL_TIME_LIMIT = TIME_LIMIT_LEVEL_3;
+                CURRENT_LEVEL = 3;
+                return LEVEL_3;
+        }
+        return LEVEL_1;
     }
 
     public Game(Context context, AttributeSet attrs) {
@@ -138,8 +163,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     }
 
     private int getScreenWidth() {
-        int pixels = Resources.getSystem().getDisplayMetrics().widthPixels;
-        return pixels;
+        return Resources.getSystem().getDisplayMetrics().widthPixels;
     }
 
     private int getScreenHeight() {
@@ -166,9 +190,7 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
 
     private void checkLevelCleared() {
         if (_level._player._coinCount == _level._coinCount) {
-            CURRENT_LEVEL =
-                    (CURRENT_LEVEL.equalsIgnoreCase(LEVEL_1) ? LEVEL_2 :
-                            (CURRENT_LEVEL.equalsIgnoreCase(LEVEL_2) ? LEVEL_3 : LEVEL_1));
+            CURRENT_LEVEL = (CURRENT_LEVEL == 1 ? 2 : (CURRENT_LEVEL == 2 ? 3 : 1));
             loadLevel(CURRENT_LEVEL);
         }
     }
@@ -183,11 +205,14 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     }
 
     private void update(final double dt) {
+        if (_saveDataExists) {
+            setupGameData();
+        }
         if (_gameOver) {
             gameOverUpdate();
             return;
         }
-        _camera.lookAt(_level._player); // TODO ease it bruh
+        _camera.lookAt(_level._player);
         _level.update(dt);
         _timeLeft -= 0.01f;
         checkGameOver();
@@ -195,14 +220,11 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
     }
 
     private void gameOverUpdate() {
-        if (_controls._isJumping) {
-            loadLevel(LEVEL_1);
+        if (_controls._isJumping) { // isJumping == user pressed "A" to restart
+            loadLevel(1);
             _gameOver = false;
         }
     }
-
-    // TODO provide a viewport
-    private static final Point _position = new Point();
 
     private void render(final Viewport camera, final ArrayList<Entity> visibleEntities) {
         if (!acquireAndLockCanvas()) {
@@ -234,7 +256,34 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
         return (_canvas != null);
     }
 
+    private void setupGameData() {
+        if (_saveData != null) {
+            loadLevel(_saveData._currentLevel);
+            _timeLeft = _saveData._currentTimeLeft;
+            if (_saveData._entityInfo != null) {
+                _level.removeDynamicEntities();
+                _level.addUpdatedDynamicEntities(_saveData._entityInfo);
+                _level.addAndRemoveEntities();
+                _hud._player = _level._player;
+                _hud._coinCount = _level._coinCount;
+                _level._player._health = _saveData._playerHealth;
+                _level._player._coinCount = _saveData._coinCount;
+            }
+        }
+        _saveDataExists = false;
+    }
+
 //    Below here is executing on UI thread
+
+    protected void onStart() {
+        Log.d(TAG, "onStart");
+        _serializer.load();
+        SaveObject data =  _serializer._gameData;
+        if (data != null) {
+            _saveDataExists = true;
+            _saveData = data;
+        }
+    }
 
     protected void onResume() {
         Log.d(TAG, "onResume");
@@ -257,6 +306,11 @@ public class Game extends SurfaceView implements Runnable, SurfaceHolder.Callbac
                 Log.d(TAG, Log.getStackTraceString(e.getCause()));
             }
         }
+    }
+
+    protected void onStop() {
+        Log.d(TAG, "onStop");
+        _serializer.save();
     }
 
     protected void onDestroy() {

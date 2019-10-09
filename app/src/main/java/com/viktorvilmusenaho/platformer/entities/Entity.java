@@ -7,7 +7,9 @@ import android.graphics.PointF;
 
 import com.viktorvilmusenaho.platformer.Game;
 
-public abstract class Entity {
+import java.io.Serializable;
+
+public abstract class Entity implements Serializable {
     static final String TAG = "Entity";
     static final float DEFAULT_DIMENSION = 1.0f;
     public static Game _game = null; //shared ref, managed by the Game-class!
@@ -15,7 +17,7 @@ public abstract class Entity {
     public float _y = 0;
     public float _width = DEFAULT_DIMENSION;
     public float _height = DEFAULT_DIMENSION;
-
+    public String _bitmapName = "";
 
     public void update(final double dt) {
     }

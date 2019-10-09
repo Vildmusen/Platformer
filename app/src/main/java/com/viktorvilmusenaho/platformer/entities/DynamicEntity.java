@@ -2,7 +2,7 @@ package com.viktorvilmusenaho.platformer.entities;
 
 import com.viktorvilmusenaho.platformer.utils.Utils;
 
-public class DynamicEntity extends StaticEntity {
+public abstract class DynamicEntity extends StaticEntity {
 
     private static final float MAX_DELTA = 0.48f;
     static final float GRAVITY = 40f;
@@ -13,9 +13,7 @@ public class DynamicEntity extends StaticEntity {
     boolean _isOnGround = false;
     public int _animationTick = 1;
 
-    public DynamicEntity(String spriteName, int xPos, int yPos) {
-        super(spriteName, xPos, yPos);
-    }
+    public DynamicEntity(String spriteName, int xPos, int yPos) { super(spriteName, xPos, yPos); }
 
     @Override
     public void update(double dt) {
@@ -43,8 +41,6 @@ public class DynamicEntity extends StaticEntity {
             if (Entity.overlap.y < 0f) { // we've hit out feet
                 _isOnGround = true;
                 continueAnimation();
-            } else if (Entity.overlap.y > 0f) {
-                // TODO hit head
             }
         }
         if (Entity.overlap.x != 0 && !(that instanceof EnemyStaticEntity)) {

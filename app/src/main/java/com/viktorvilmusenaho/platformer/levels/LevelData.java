@@ -1,8 +1,9 @@
 package com.viktorvilmusenaho.platformer.levels;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public abstract class LevelData {
+public abstract class LevelData implements Serializable {
 
     public String NULLSPRITE = "nullsprite";
     public String BACKGROUND = "background";

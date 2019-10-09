@@ -81,9 +81,13 @@ public class Viewport {
     public void lookAt(final float x, final float y) {
         if (isInBoundsX(x)) {
             _lookAt.x = x;
+        } else {
+            _lookAt.x = closestX(x);
         }
         if (isInBoundsY(y)) {
             _lookAt.y = y;
+        } else {
+            _lookAt.y = closestY(y);
         }
     }
 
@@ -93,6 +97,14 @@ public class Viewport {
 
     public void lookAt(final PointF pos) {
         lookAt(pos.x, pos.y);
+    }
+
+    private float closestX(final float x) {
+        return (x - _halfDistX < 0 ? _bounds.left + _halfDistX : _bounds.right - _halfDistX);
+    }
+
+    private float closestY(final float y) {
+        return (y - _halfDistY < 0 ? _bounds.top + _halfDistY : _bounds.bottom - _halfDistY);
     }
 
     private boolean isInBoundsX(final float x) {
