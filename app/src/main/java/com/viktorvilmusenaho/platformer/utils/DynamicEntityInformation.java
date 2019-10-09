@@ -1,4 +1,4 @@
-package com.viktorvilmusenaho.platformer.entities;
+package com.viktorvilmusenaho.platformer.utils;
 
 import java.io.Serializable;
 

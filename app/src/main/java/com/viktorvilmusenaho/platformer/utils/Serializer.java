@@ -3,7 +3,6 @@ package com.viktorvilmusenaho.platformer.utils;
 import com.viktorvilmusenaho.platformer.Game;
 import com.viktorvilmusenaho.platformer.entities.DynamicEntity;
 import com.viktorvilmusenaho.platformer.entities.Entity;
-import com.viktorvilmusenaho.platformer.entities.DynamicEntityInformation;
 
 import java.io.File;
 import java.io.FileInputStream;

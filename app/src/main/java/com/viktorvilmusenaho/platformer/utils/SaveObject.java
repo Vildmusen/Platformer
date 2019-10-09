@@ -1,7 +1,5 @@
 package com.viktorvilmusenaho.platformer.utils;
 
-import com.viktorvilmusenaho.platformer.entities.DynamicEntityInformation;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 

@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.viktorvilmusenaho.platformer.entities.Coin;
 import com.viktorvilmusenaho.platformer.entities.DynamicEntity;
-import com.viktorvilmusenaho.platformer.entities.DynamicEntityInformation;
+import com.viktorvilmusenaho.platformer.utils.DynamicEntityInformation;
 import com.viktorvilmusenaho.platformer.entities.Entity;
 import com.viktorvilmusenaho.platformer.entities.Lava;
 import com.viktorvilmusenaho.platformer.entities.Player;
