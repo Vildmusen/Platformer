@@ -11,6 +11,7 @@ import com.viktorvilmusenaho.platformer.entities.Player;
 public class HUD {
 
     private static final String START_MESSAGE = "Collect all the coins before the timer runs out!";
+    private static final String START_MESSAGE_TUTORIAL = "Welcome to the tutorial! -> -> ->";
     private static final String GAME_OVER_MESSAGE_1 = "GAME OVER";
     private static final String GAME_OVER_MESSAGE_2 = "Press A to try again!";
     private static final int HUD_EDGE_MARGIN = 30;
@@ -81,8 +82,9 @@ public class HUD {
     private void renderStartMessage(Canvas canvas, Paint paint) {
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize((int) (_textSize * 1.5));
-        String text = START_MESSAGE;
-        canvas.drawText(text, _game.STAGE_WIDTH / 2, _game.STAGE_HEIGHT * 0.67f, paint);
+        String text = _game.CURRENT_LEVEL == 1 ? START_MESSAGE_TUTORIAL : START_MESSAGE;
+        float textYPos = _game.CURRENT_LEVEL == 1 ? _game.STAGE_HEIGHT * 0.60f : _game.STAGE_HEIGHT * 0.40f;
+        canvas.drawText(text, _game.STAGE_WIDTH / 2, textYPos, paint);
     }
 
     private void renderTimer(Canvas canvas, Paint paint, final float timeLeft) {
